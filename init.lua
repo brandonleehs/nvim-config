@@ -97,9 +97,13 @@ vim.g.have_nerd_font = false
 -- See `:help vim.o`
 -- NOTE: You can change these options as you wish!
 --  For more options, you can see `:help option-list`
+--
+--
+-- Show completions but don't auto-insert the first match
+vim.opt.wildmode = { 'list', 'full' }
 
 -- Make line numbers default
-vim.o.number = true
+vim.o.relativenumber = true
 -- You can also add relative line numbers, to help with jumping.
 --  Experiment for yourself to see if you like it!
 -- vim.o.relativenumber = true
@@ -120,6 +124,23 @@ end)
 
 -- Enable break indent
 vim.o.breakindent = true
+
+-- Enable auto indent
+vim.o.autoindent = true
+
+-- Enable smart indent
+vim.o.smartindent = true
+
+-- Set indent to 2 spaces for js/ts
+vim.api.nvim_create_autocmd('FileType', {
+  pattern = { 'typescriptreact', 'typescript', 'javascript', 'javascriptreact' },
+  callback = function()
+    vim.opt_local.tabstop = 2
+    vim.opt_local.softtabstop = 2
+    vim.opt_local.shiftwidth = 2
+    vim.opt_local.expandtab = true
+  end,
+})
 
 -- Save undo history
 vim.o.undofile = true
@@ -205,6 +226,9 @@ vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper win
 -- vim.keymap.set("n", "<C-S-j>", "<C-w>J", { desc = "Move window to the lower" })
 -- vim.keymap.set("n", "<C-S-k>", "<C-w>K", { desc = "Move window to the upper" })
 
+-- Keymap for showing errors
+vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Show diagnostics (float)' })
+
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
 
@@ -255,6 +279,108 @@ require('lazy').setup({
   --
   -- Use `opts = {}` to automatically pass options to a plugin's `setup()` function, forcing the plugin to be loaded.
   --
+  {
+
+    'numToStr/Comment.nvim',
+
+    opts = {},
+  },
+
+  -- Plugin for convenient search and replace of word variants
+  {
+    'tpope/vim-abolish',
+  },
+
+  -- A git plugin wrapper
+  {
+    'tpope/vim-fugitive',
+  },
+
+  -- Plugin for troubleshooting LSP errors
+  {
+    'folke/trouble.nvim',
+    opts = {}, -- for default options, refer to the configuration section for custom setup.
+    cmd = 'Trouble',
+    keys = {
+      {
+        '<leader>xx',
+        '<cmd>Trouble diagnostics toggle<cr>',
+        desc = 'Diagnostics (Trouble)',
+      },
+      {
+        '<leader>xX',
+        '<cmd>Trouble diagnostics toggle filter.buf=0<cr>',
+        desc = 'Buffer Diagnostics (Trouble)',
+      },
+      {
+        '<leader>cs',
+        '<cmd>Trouble symbols toggle focus=false<cr>',
+        desc = 'Symbols (Trouble)',
+      },
+      {
+        '<leader>cl',
+        '<cmd>Trouble lsp toggle focus=false win.position=right<cr>',
+        desc = 'LSP Definitions / references / ... (Trouble)',
+      },
+      {
+        '<leader>xL',
+        '<cmd>Trouble loclist toggle<cr>',
+        desc = 'Location List (Trouble)',
+      },
+      {
+        '<leader>xQ',
+        '<cmd>Trouble qflist toggle<cr>',
+        desc = 'Quickfix List (Trouble)',
+      },
+    },
+  },
+
+  -- install with yarn or npm
+  {
+    'iamcco/markdown-preview.nvim',
+    cmd = { 'MarkdownPreviewToggle', 'MarkdownPreview', 'MarkdownPreviewStop' },
+    build = 'cd app && npm install',
+    init = function()
+      vim.g.mkdp_filetypes = { 'markdown' }
+    end,
+    ft = { 'markdown' },
+  },
+  -- {
+
+  --   'laytan/tailwind-sorter.nvim',
+
+  --   dependencies = { 'nvim-treesitter/nvim-treesitter', 'nvim-lua/plenary.nvim' },
+
+  --   build = 'cd formatter && npm ci && npm run build',
+
+  --   config = function()
+
+  --     require('tailwind-sorter').setup {
+
+  --       on_save_enabled = true, -- If `true`, automatically enables on save sorting.
+
+  --       on_save_pattern = { '*.html', '*.js', '*.jsx', '*.tsx', '*.twig', '*.hbs', '*.php', '*.heex', '*.astro' }, -- The file patterns to watch and sort.
+
+  --       node_path = 'node',
+
+  --       trim_spaces = true, -- If `true`, trim any extra spaces after sorting.
+
+  --     }
+
+  --   end,
+
+  -- },
+
+  {
+
+    'L3MON4D3/LuaSnip',
+
+    keys = function()
+      -- Disable default tab keybinding in LuaSnip
+
+      return {}
+    end,
+  },
 
   -- Alternatively, use `config = function() ... end` for full control over the configuration.
   -- If you prefer to call `setup` explicitly, use:
@@ -407,6 +533,15 @@ require('lazy').setup({
         -- You can put your default mappings / updates / etc. in here
         --  All the info you're looking for is in `:help telescope.setup()`
         --
+        defaults = {
+
+          file_ignore_patterns = {
+
+            'node_modules',
+
+            '.git',
+          },
+        },
         -- defaults = {
         --   mappings = {
         --     i = { ['<c-enter>'] = 'to_fuzzy_refine' },
@@ -673,15 +808,29 @@ require('lazy').setup({
       local servers = {
         -- clangd = {},
         -- gopls = {},
-        -- pyright = {},
-        -- rust_analyzer = {},
+        pyright = {},
+        rust_analyzer = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
         -- Some languages (like typescript) have entire language plugins that can be useful:
         --    https://github.com/pmizio/typescript-tools.nvim
         --
         -- But for many setups, the LSP (`ts_ls`) will work just fine
-        -- ts_ls = {},
+
+        html = {},
+
+        css_variables = {},
+
+        cssls = {},
+
+        ts_ls = {},
+
+        tailwindcss = {},
+
+        emmet_language_server = {},
+
+        jsonls = {},
+
         --
 
         lua_ls = {
@@ -761,7 +910,7 @@ require('lazy').setup({
           return nil
         else
           return {
-            timeout_ms = 500,
+            timeout_ms = 3000,
             lsp_format = 'fallback',
           }
         end
@@ -769,10 +918,32 @@ require('lazy').setup({
       formatters_by_ft = {
         lua = { 'stylua' },
         -- Conform can also run multiple formatters sequentially
-        -- python = { "isort", "black" },
+        python = { 'isort', 'black' },
         --
         -- You can use 'stop_after_first' to run the first available formatter from the list
-        -- javascript = { "prettierd", "prettier", stop_after_first = true },
+        javascript = { 'prettierd', 'stop_after_first' },
+
+        typescript = { 'prettierd', 'stop_after_first' },
+
+        javascriptreact = { 'prettierd', 'stop_after_first' },
+
+        typescriptreact = { 'prettierd', 'stop_after_first' },
+
+        svelte = { 'prettierd', 'stop_after_first' },
+
+        css = { 'prettierd', 'stop_after_first' },
+
+        html = { 'prettierd', 'stop_after_first' },
+
+        json = { 'prettierd', 'stop_after_first' },
+
+        yaml = { 'prettierd', 'stop_after_first' },
+
+        markdown = { 'prettierd', 'stop_after_first' },
+
+        graphql = { 'prettierd', 'stop_after_first' },
+
+        rust = { 'rustfmt', lsp_format = 'fallback' },
       },
     },
   },
@@ -854,9 +1025,15 @@ require('lazy').setup({
       },
 
       sources = {
-        default = { 'lsp', 'path', 'snippets', 'lazydev' },
+        default = { 'lsp', 'path', 'snippets', 'lazydev', 'cmdline' },
         providers = {
           lazydev = { module = 'lazydev.integrations.blink', score_offset = 100 },
+
+          cmdline = {
+            enabled = function()
+              return vim.fn.getcmdline():sub(1, 1) ~= '!'
+            end,
+          },
         },
       },
 
@@ -874,6 +1051,48 @@ require('lazy').setup({
       -- Shows a signature help window while you type arguments for a function
       signature = { enabled = true },
     },
+  },
+
+  -- {
+  --   'abecodes/tabout.nvim',
+  --   lazy = false,
+  --   config = function()
+  --     require('tabout').setup {
+  --       tabkey = '<Tab>', -- key to trigger tabout, set to an empty string to disable
+  --       backwards_tabkey = '<S-Tab>', -- key to trigger backwards tabout, set to an empty string to disable
+  --       act_as_tab = true, -- shift content if tab out is not possible
+  --       act_as_shift_tab = false, -- reverse shift content if tab out is not possible (if your keyboard/terminal supports <S-Tab>)
+  --       default_tab = '<C-t>', -- shift default action (only at the beginning of a line, otherwise <TAB> is used)
+  --       default_shift_tab = '<C-d>', -- reverse shift default action,
+  --       enable_backwards = true, -- well ...
+  --       completion = false, -- if the tabkey is used in a completion pum
+  --       tabouts = {
+  --         { open = "'", close = "'" },
+  --         { open = '"', close = '"' },
+  --         { open = '`', close = '`' },
+  --         { open = '(', close = ')' },
+  --         { open = '[', close = ']' },
+  --         { open = '{', close = '}' },
+  --       },
+  --       ignore_beginning = true, --[[ if the cursor is at the beginning of a filled element it will rather tab out than shift the content ]]
+  --       exclude = {}, -- tabout will ignore these filetypes
+  --     }
+  --   end,
+  --   dependencies = { -- These are optional
+  --     'nvim-treesitter/nvim-treesitter',
+  --     'L3MON4D3/LuaSnip',
+  --     'hrsh7th/nvim-cmp',
+  --   },
+  --   opt = true, -- Set this to true if the plugin is optional
+  --   event = 'InsertCharPre', -- Set the event to 'InsertCharPre' for better compatibility
+  --   priority = 1000,
+  -- },
+  {
+    'L3MON4D3/LuaSnip',
+    keys = function()
+      -- Disable default tab keybinding in LuaSnip
+      return {}
+    end,
   },
 
   { -- You can easily change to a different colorscheme.
@@ -894,7 +1113,26 @@ require('lazy').setup({
       -- Load the colorscheme here.
       -- Like many other themes, this one has different styles, and you could load
       -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-      vim.cmd.colorscheme 'tokyonight-night'
+      -- vim.cmd.colorscheme 'tokyonight-night'
+    end,
+  },
+
+  {
+    'Mofiqul/dracula.nvim',
+    priority = 1000, -- Make sure to load this before all the other start plugins.
+    config = function()
+      ---@diagnostic disable-next-line: missing-fields
+      require('dracula').setup {
+        colors = {
+          bg = '#222436',
+        },
+        italic_comment = true,
+      }
+
+      -- Load the colorscheme here.
+      -- Like many other themes, this one has different styles, and you could load
+      -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
+      vim.cmd.colorscheme 'dracula'
     end,
   },
 
@@ -944,7 +1182,23 @@ require('lazy').setup({
     main = 'nvim-treesitter.configs', -- Sets main module to use for opts
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
     opts = {
-      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' },
+      ensure_installed = {
+        'bash',
+        'c',
+        'css',
+        'diff',
+        'html',
+        'lua',
+        'luadoc',
+        'markdown',
+        'markdown_inline',
+        'query',
+        'vim',
+        'vimdoc',
+        'javascript',
+        'typescript',
+        'sql',
+      },
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {
@@ -973,12 +1227,12 @@ require('lazy').setup({
   --  Here are some example plugins that I've included in the Kickstart repository.
   --  Uncomment any of the lines below to enable them (you will need to restart nvim).
   --
-  -- require 'kickstart.plugins.debug',
-  -- require 'kickstart.plugins.indent_line',
-  -- require 'kickstart.plugins.lint',
-  -- require 'kickstart.plugins.autopairs',
-  -- require 'kickstart.plugins.neo-tree',
-  -- require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
+  require 'kickstart.plugins.debug',
+  require 'kickstart.plugins.indent_line',
+  require 'kickstart.plugins.lint',
+  require 'kickstart.plugins.autopairs',
+  require 'kickstart.plugins.neo-tree',
+  require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
   --    This is the easiest way to modularize your config.

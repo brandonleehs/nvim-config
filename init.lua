@@ -97,10 +97,6 @@ vim.g.have_nerd_font = false
 -- See `:help vim.o`
 -- NOTE: You can change these options as you wish!
 --  For more options, you can see `:help option-list`
---
---
--- Show completions but don't auto-insert the first match
-vim.opt.wildmode = { 'list', 'full' }
 
 -- Make line numbers default
 vim.o.relativenumber = true
